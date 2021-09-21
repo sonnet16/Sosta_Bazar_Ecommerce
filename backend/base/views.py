@@ -88,6 +88,41 @@ def getUsers(request):
     return Response(serializer.data)
 
 
+@api_view(['GET']) 
+@permission_classes([ IsAdminUser ])
+def getUserById(request,pk):
+    user = User.objects.get(id=pk)
+    serializer = UserSerializer(user,many=False)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([ IsAdminUser ])
+def updateUser(request, pk):
+    user = User.objects.get(id=pk)
+    
+
+    data = request.data
+
+    user.first_name = data['name']
+    user.username = data['email']
+    user.email = data['email']
+    user.is_staff = data['isAdmin']
+    
+    user.save()
+    serializer = UserSerializer(user,many=False)
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def deleteUser(request, pk):
+    user = User.objects.get(id=pk)
+    user.delete()
+    return Response('User Was Deleted')
+
+
+
 
 @api_view(['GET']) 
 def getProducts(request):
@@ -132,6 +167,14 @@ def getProduct(request, pk):
     serializer = ProductSerializer(product, many=False)
     return Response(serializer.data)
 
+
+
+@api_view(['DELETE'])
+@permission_classes([ IsAdminUser ])
+def deleteProduct(request, pk):
+    product = Product.objects.get(_id = pk)
+    product.delete()
+    return Response('Product Was Deleted')
 
 
 @api_view(['POST'])
@@ -211,7 +254,8 @@ def getOrderById(request, pk):
         return Response({'detail': 'Order does not Exists'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
 def updateOrderToPaid( request, pk):
     order = Order.objects.get(_id=pk)
 
@@ -220,3 +264,16 @@ def updateOrderToPaid( request, pk):
     order.save()
 
     return Response('Order Is Paid')
+
+
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def updateOrderToDelivered( request, pk):
+    order = Order.objects.get(_id=pk)
+
+    order.isDelivered = True
+    order.deliveredAt = datetime.now()
+    order.save()
+
+    return Response('Order Is Delivered')
